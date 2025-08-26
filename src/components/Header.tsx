@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Wrench, UserPlus, Search, LogIn, LogOut, Settings } from 'lucide-react';
+import { Wrench, UserPlus, Search, LogIn, LogOut, Settings, Menu, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import LoginModal from './LoginModal';
 
@@ -8,6 +8,7 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [showLoginModal, setShowLoginModal] = React.useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -26,9 +27,8 @@ const Header: React.FC = () => {
               <span className="text-2xl font-bold text-gray-900">MechFinder</span>
             </Link>
 
-            {/* Navigation */}
-            <nav className="flex space-x-8">
-              {/* ✅ Show only when NOT logged in */}
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex space-x-6">
               {!user && (
                 <>
                   <Link
@@ -65,7 +65,6 @@ const Header: React.FC = () => {
                 </>
               )}
 
-              {/* ✅ Show only when logged in */}
               {user && (
                 <>
                   <Link
@@ -90,15 +89,89 @@ const Header: React.FC = () => {
                 </>
               )}
             </nav>
+
+            {/* Mobile menu toggle button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden text-gray-700 focus:outline-none"
+            >
+              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden px-4 py-4 space-y-2 border-t border-gray-200">
+            {!user && (
+              <>
+                <Link
+                  to="/"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive('/')
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Find Mechanics
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive('/register')
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Register as Mechanic
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowLoginModal(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                >
+                  Mechanic Login
+                </button>
+              </>
+            )}
+
+            {user && (
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                    isActive('/dashboard')
+                      ? 'text-blue-600 bg-blue-50'
+                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-3 py-2 rounded-md text-sm font-medium text-red-600 hover:bg-red-50"
+                >
+                  Sign Out
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </header>
 
       {/* Login Modal */}
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        onSuccess={() => setShowLoginModal(false)} // close modal after success
+        onSuccess={() => setShowLoginModal(false)}
       />
     </>
   );
