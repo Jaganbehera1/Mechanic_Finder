@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Globe } from 'lucide-react';
-import { useLanguage, Language } from '../contexts/LanguageContext'; // ✅ Add this
+import { useLanguage, Language } from '../contexts/LanguageContext';
 
 interface LanguageSelectorProps {
   onCloseMenu?: () => void;
@@ -8,7 +8,8 @@ interface LanguageSelectorProps {
 
 const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onCloseMenu }) => {
   const { language, setLanguage } = useLanguage();
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const languages = [
     { code: 'en', name: 'English', nativeName: 'English' },
@@ -19,17 +20,37 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onCloseMenu }) => {
   const handleSelect = (code: Language) => {
     setLanguage(code);
     setOpen(false);
-    onCloseMenu?.(); // 👈 Closes mobile menu if passed
+    onCloseMenu?.();
   };
 
+  // ✅ Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [open]);
+
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setOpen(!open)}
         className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors"
       >
         <Globe className="h-4 w-4" />
-        <span>{languages.find(l => l.code === language)?.nativeName}</span>
+        <span>{languages.find((l) => l.code === language)?.nativeName}</span>
       </button>
 
       {open && (
@@ -38,7 +59,7 @@ const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onCloseMenu }) => {
             {languages.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => handleSelect(lang.code)}
+                onClick={() => handleSelect(lang.code as Language)}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-blue-50 transition-colors ${
                   language === lang.code
                     ? 'bg-blue-50 text-blue-600 font-medium'
