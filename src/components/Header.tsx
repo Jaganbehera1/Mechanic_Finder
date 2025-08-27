@@ -173,9 +173,11 @@ const Header: React.FC = () => {
             )}
             
             {/* Mobile Language Selector */}
+            {/* Mobile Language Selector */}
             <div className="pt-2 border-t border-gray-200">
-              <LanguageSelector />
+              <LanguageSelector onCloseMenu={() => setIsMobileMenuOpen(false)} />
             </div>
+
           </div>
         )}
       </header>
