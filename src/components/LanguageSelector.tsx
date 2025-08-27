@@ -15,7 +15,7 @@ const LanguageSelector: React.FC = () => {
     <div className="relative group">
       <button className="flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-colors">
         <Globe className="h-4 w-4" />
-        <span className="hidden sm:inline">{languages.find(l => l.code === language)?.nativeName}</span>
+        <span>{languages.find(l => l.code === language)?.nativeName}</span>
       </button>
       
       <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
