@@ -6,5 +6,5 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
-  base: './', // 👈 important for Netlify to resolve assets correctly
+  base: '/', // 👈 important for Netlify to resolve assets correctly
 });
