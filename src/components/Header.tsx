@@ -10,6 +10,7 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
+
   const [showLoginModal, setShowLoginModal] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -88,7 +89,8 @@ const Header: React.FC = () => {
                 )}
               </nav>
 
-              {/* Removed old LanguageSelector from here */}
+              {/* Desktop Language Selector */}
+              <LanguageSelector />
             </div>
 
             {/* Right side - Mobile Language Selector + Hamburger Menu */}
@@ -100,6 +102,7 @@ const Header: React.FC = () => {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="text-gray-700 focus:outline-none"
+                aria-label="Toggle menu"
               >
                 {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </button>
@@ -165,7 +168,10 @@ const Header: React.FC = () => {
               </>
             )}
 
-            {/* Removed LanguageSelector from here as well */}
+            {/* Mobile Language Selector (optional duplicate if you want inside menu as well) */}
+            {/* <div className="pt-2 border-t border-gray-200">
+              <LanguageSelector />
+            </div> */}
           </div>
         )}
       </header>
