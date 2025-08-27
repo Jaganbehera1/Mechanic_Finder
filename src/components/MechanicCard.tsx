@@ -1,6 +1,7 @@
 import React from 'react';
-import { Phone, Mail, MapPin, Star, Calendar, Briefcase, StarIcon } from 'lucide-react';
+import { Phone, Mail, MapPin, Star, Calendar, Briefcase } from 'lucide-react';
 import { Mechanic } from '../types/mechanic';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface MechanicCardProps {
   mechanic: Mechanic;
@@ -8,6 +9,8 @@ interface MechanicCardProps {
 }
 
 const MechanicCard: React.FC<MechanicCardProps> = ({ mechanic, onRate }) => {
+  const { t } = useLanguage();
+  
   const getAvailabilityColor = (availability: string) => {
     switch (availability) {
       case 'available':
@@ -24,13 +27,13 @@ const MechanicCard: React.FC<MechanicCardProps> = ({ mechanic, onRate }) => {
   const getAvailabilityText = (availability: string) => {
     switch (availability) {
       case 'available':
-        return 'Available';
+        return t('card.available');
       case 'busy':
-        return 'Busy';
+        return t('card.busy');
       case 'unavailable':
-        return 'Unavailable';
+        return t('card.unavailable');
       default:
-        return 'Unknown';
+        return t('card.unavailable');
     }
   };
 
@@ -80,7 +83,7 @@ const MechanicCard: React.FC<MechanicCardProps> = ({ mechanic, onRate }) => {
                 {renderStars()}
               </div>
               <span className="text-xs text-gray-600">
-                {mechanic.rating > 0 ? `${mechanic.rating.toFixed(1)} stars` : 'No ratings yet'}
+                {mechanic.rating > 0 ? `${mechanic.rating.toFixed(1)} ${t('card.stars')}` : t('card.noRatings')}
               </span>
             </div>
           </div>
@@ -107,11 +110,11 @@ const MechanicCard: React.FC<MechanicCardProps> = ({ mechanic, onRate }) => {
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center text-gray-600">
             <Briefcase className="h-4 w-4 mr-2 text-gray-500" />
-            <span className="text-sm">{mechanic.experience} years exp</span>
+            <span className="text-sm">{mechanic.experience} {t('card.yearsExp')}</span>
           </div>
           <div className="flex items-center text-gray-600">
             <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-            <span className="text-sm">{mechanic.completedJobs} jobs</span>
+            <span className="text-sm">{mechanic.completedJobs} {t('card.jobs')}</span>
           </div>
         </div>
 
@@ -120,11 +123,14 @@ const MechanicCard: React.FC<MechanicCardProps> = ({ mechanic, onRate }) => {
         <div className="flex justify-between items-center">
           <div className="text-right">
             <p className="text-2xl font-bold text-gray-900">₹{mechanic.perDayCost.toLocaleString('en-IN')}</p>
-            <p className="text-sm text-gray-500">per day</p>
+            <p className="text-sm text-gray-500">{t('card.perDay')}</p>
           </div>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200">
-            Contact
-          </button>
+          <a
+            href={`tel:${mechanic.contactNumber}`}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 inline-block text-center"
+          >
+            {t('card.contact')}
+          </a>
         </div>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { Globe } from 'lucide-react';
 import { useLanguage, Language } from '../contexts/LanguageContext';
 
 const LanguageSelector: React.FC = () => {
-  const { language, setLanguage} = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
 
   const languages: { code: Language; name: string; nativeName: string }[] = [
     { code: 'en', name: 'English', nativeName: 'English' },

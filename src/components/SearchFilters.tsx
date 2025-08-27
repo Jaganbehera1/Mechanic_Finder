@@ -1,7 +1,8 @@
 import React from 'react';
-import { Search, Filter, X } from 'lucide-react';
+import { Filter, X } from 'lucide-react';
 import { SearchFilters as Filters, MECHANIC_CATEGORIES } from '../types/mechanic';
 import { getStates, getDistrictsByState } from '../data/indianStatesDistricts';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface SearchFiltersProps {
   filters: Filters;
@@ -9,6 +10,7 @@ interface SearchFiltersProps {
 }
 
 const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange }) => {
+  const { t } = useLanguage();
   const handleFilterChange = (key: keyof Filters, value: string | number) => {
     const newFilters = { ...filters, [key]: value };
     
@@ -39,7 +41,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center">
           <Filter className="h-5 w-5 text-blue-600 mr-2" />
-          <h2 className="text-lg font-semibold text-gray-900">Search & Filter</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{t('filters.searchFilter')}</h2>
         </div>
         {hasActiveFilters && (
           <button
@@ -47,7 +49,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
             className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
           >
             <X className="h-4 w-4" />
-            <span>Clear Filters</span>
+            <span>{t('filters.clearFilters')}</span>
           </button>
         )}
       </div>
@@ -55,14 +57,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Category
+            {t('filters.category')}
           </label>
           <select
             value={filters.category}
             onChange={(e) => handleFilterChange('category', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All Categories</option>
+            <option value="">{t('filters.allCategories')}</option>
             {MECHANIC_CATEGORIES.map(category => (
               <option key={category} value={category}>{category}</option>
             ))}
@@ -71,14 +73,14 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            State
+            {t('filters.state')}
           </label>
           <select
             value={filters.state}
             onChange={(e) => handleFilterChange('state', e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">All States</option>
+            <option value="">{t('filters.allStates')}</option>
             {getStates().map(state => (
               <option key={state} value={state}>{state}</option>
             ))}
@@ -87,7 +89,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            District
+            {t('filters.district')}
           </label>
           <select
             value={filters.district}
@@ -95,7 +97,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={!filters.state}
           >
-            <option value="">All Districts</option>
+            <option value="">{t('filters.allDistricts')}</option>
             {availableDistricts.map(district => (
               <option key={district} value={district}>{district}</option>
             ))}
@@ -104,27 +106,27 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({ filters, onFiltersChange 
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Max Daily Cost (₹)
+            {t('filters.maxDailyCost')}
           </label>
           <input
             type="number"
             value={filters.maxCost || ''}
             onChange={(e) => handleFilterChange('maxCost', parseInt(e.target.value) || 0)}
-            placeholder="Enter amount in ₹"
+            placeholder={t('filters.enterAmount')}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Min Rating
+            {t('filters.minRating')}
           </label>
           <select
             value={filters.minRating}
             onChange={(e) => handleFilterChange('minRating', parseFloat(e.target.value))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value={0}>Any Rating</option>
+            <option value={0}>{t('filters.anyRating')}</option>
             <option value={4.5}>4.5+ Stars</option>
             <option value={4.0}>4.0+ Stars</option>
             <option value={3.5}>3.5+ Stars</option>
