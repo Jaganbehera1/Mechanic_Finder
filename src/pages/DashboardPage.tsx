@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, MapPin, Phone, Mail, IndianRupee, FileText, Save, Eye, EyeOff } from 'lucide-react';
+import { User, MapPin, Phone, Mail, IndianRupee, FileText, Save, Link, Plus, X} from 'lucide-react';
 import { MECHANIC_CATEGORIES } from '../types/mechanic';
 import { getStates, getDistrictsByState } from '../data/indianStatesDistricts';
 import { useAuth } from '../hooks/useAuth';
 import { mechanicService } from '../services/mechanicService';
 import { Mechanic } from '../types/mechanic';
+import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 
 const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -26,8 +27,14 @@ const DashboardPage: React.FC = () => {
     email: '',
     experience: '',
     description: '',
-    availability: 'available' as const
+    availability: 'available' as const,
+    profileImageUrl: '',
+    skills: [] as string[],
+    website: '',
+    linkedin: '',
+    instagram: '',
   });
+  const [newSkill, setNewSkill] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -61,6 +68,11 @@ const DashboardPage: React.FC = () => {
           experience: mechanicData.experience.toString(),
           description: mechanicData.description,
           availability: mechanicData.availability,
+         profileImageUrl: mechanicData.profileImageUrl || '',
+         skills: mechanicData.skills || [],
+         website: mechanicData.socialLinks?.website || '',
+         linkedin: mechanicData.socialLinks?.linkedin || '',
+         instagram: mechanicData.socialLinks?.instagram || '',
         });
       }
     } catch (error) {
@@ -82,6 +94,23 @@ const DashboardPage: React.FC = () => {
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const addSkill = () => {
+    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()]
+      }));
+      setNewSkill('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
   };
 
   const validateForm = () => {
@@ -143,6 +172,13 @@ const DashboardPage: React.FC = () => {
         experience: parseInt(formData.experience),
         description: formData.description,
         availability: formData.availability,
+        profileImageUrl: formData.profileImageUrl,
+        skills: formData.skills,
+        socialLinks: {
+          website: formData.website,
+          linkedin: formData.linkedin,
+          instagram: formData.instagram,
+        },
       };
 
       const { success, error } = await mechanicService.updateMechanic(user.id, updates);
@@ -427,6 +463,100 @@ const DashboardPage: React.FC = () => {
                   <option value="busy">Busy</option>
                   <option value="unavailable">Unavailable</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Profile Image */}
+            <div className="mt-6">
+              <ProfilePhotoUpload
+                currentImageUrl={formData.profileImageUrl}
+                onImageUpload={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url }))}
+                userId={user?.id || ''}
+                disabled={saving}
+              />
+            </div>
+
+            {/* Skills */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Skills & Specializations
+              </label>
+              <div className="flex space-x-2 mb-3">
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Furniture Making, Home Renovation"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="mt-6">
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-4">
+                <Link className="h-4 w-4 mr-2 text-gray-500" />
+                Professional Links (Optional)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">LinkedIn</label>
+                  <input
+                    type="url"
+                    name="linkedin"
+                    value={formData.linkedin}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Instagram</label>
+                  <input
+                    type="url"
+                    name="instagram"
+                    value={formData.instagram}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://instagram.com/yourprofile"
+                  />
+                </div>
               </div>
             </div>
 
