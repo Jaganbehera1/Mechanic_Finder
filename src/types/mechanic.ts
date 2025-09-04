@@ -16,6 +16,32 @@ export interface Mechanic {
   rating: number;
   completedJobs: number;
   joinedDate: string;
+  profileImageUrl?: string;
+  skills?: string[];
+  socialLinks?: {
+    website?: string;
+    linkedin?: string;
+    instagram?: string;
+  };
+  latitude?: number;
+  longitude?: number;
+  profileCompletionPercentage?: number;
+  lastLogin?: string;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  isFeatured?: boolean;
+  portfolioImages?: string[];
+}
+
+export interface MechanicReview {
+  id: string;
+  mechanicId: string;
+  customerName: string;
+  customerEmail?: string;
+  rating: number;
+  reviewText?: string;
+  workCategory?: string;
+  createdAt: string;
 }
 
 export interface SearchFilters {
