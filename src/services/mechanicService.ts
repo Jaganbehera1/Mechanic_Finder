@@ -32,6 +32,17 @@ export const mechanicService = {
       rating: mechanic.rating,
       completedJobs: mechanic.completed_jobs,
       joinedDate: mechanic.created_at.split('T')[0],
+      profileImageUrl: mechanic.profile_image_url,
+      skills: mechanic.skills,
+      socialLinks: mechanic.social_links,
+      latitude: mechanic.latitude,
+      longitude: mechanic.longitude,
+      profileCompletionPercentage: mechanic.profile_completion_percentage,
+      lastLogin: mechanic.last_login,
+      emailVerified: mechanic.email_verified,
+      phoneVerified: mechanic.phone_verified,
+      isFeatured: mechanic.is_featured,
+      portfolioImages: mechanic.portfolio_images,
     }));
   },
 
@@ -66,6 +77,17 @@ export const mechanicService = {
       rating: data.rating,
       completedJobs: data.completed_jobs,
       joinedDate: data.created_at.split('T')[0],
+      profileImageUrl: data.profile_image_url,
+      skills: data.skills,
+      socialLinks: data.social_links,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      profileCompletionPercentage: data.profile_completion_percentage,
+      lastLogin: data.last_login,
+      emailVerified: data.email_verified,
+      phoneVerified: data.phone_verified,
+      isFeatured: data.is_featured,
+      portfolioImages: data.portfolio_images,
     };
   },
 
@@ -87,6 +109,12 @@ export const mechanicService = {
         experience: mechanicData.experience,
         description: mechanicData.description,
         availability: mechanicData.availability,
+        skills: mechanicData.skills || [],
+        social_links: mechanicData.socialLinks || {},
+        profile_image_url: mechanicData.profileImageUrl,
+        email_verified: false,
+        phone_verified: false,
+        is_featured: false,
       })
       .select()
       .single();
@@ -117,6 +145,11 @@ export const mechanicService = {
     if (updates.availability) updateData.availability = updates.availability;
     if (updates.rating !== undefined) updateData.rating = updates.rating;
     if (updates.completedJobs !== undefined) updateData.completed_jobs = updates.completedJobs;
+    if (updates.skills) updateData.skills = updates.skills;
+    if (updates.socialLinks) updateData.social_links = updates.socialLinks;
+    if (updates.profileImageUrl !== undefined) updateData.profile_image_url = updates.profileImageUrl;
+    if (updates.emailVerified !== undefined) updateData.email_verified = updates.emailVerified;
+    if (updates.phoneVerified !== undefined) updateData.phone_verified = updates.phoneVerified;
 
     const { error } = await supabase
       .from('mechanics')
@@ -165,5 +198,103 @@ export const mechanicService = {
     }
 
     return data.length === 0;
+  },
+
+  // Add review for mechanic
+  async addReview(mechanicId: string, customerName: string, rating: number, reviewText?: string, customerEmail?: string, workCategory?: string): Promise<{ success: boolean; error?: string }> {
+    const { error } = await supabase
+      .from('mechanic_reviews')
+      .insert({
+        mechanic_id: mechanicId,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        rating,
+        review_text: reviewText,
+        work_category: workCategory,
+      });
+
+    if (error) {
+      console.error('Error adding review:', error);
+      return { success: false, error: error.message };
+    }
+
+    // Update mechanic's average rating
+    const { data: reviews } = await supabase
+      .from('mechanic_reviews')
+      .select('rating')
+      .eq('mechanic_id', mechanicId);
+
+    if (reviews && reviews.length > 0) {
+      const avgRating = reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length;
+      await supabase
+        .from('mechanics')
+        .update({ rating: Math.round(avgRating * 10) / 10 })
+        .eq('id', mechanicId);
+    }
+
+    return { success: true };
+  },
+
+  // Get reviews for mechanic
+  async getReviews(mechanicId: string): Promise<any[]> {
+    const { data, error } = await supabase
+      .from('mechanic_reviews')
+      .select('*')
+      .eq('mechanic_id', mechanicId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching reviews:', error);
+      return [];
+    }
+
+    return data || [];
+  },
+
+  // Toggle favorite mechanic
+  async toggleFavorite(userEmail: string, mechanicId: string): Promise<{ success: boolean; isFavorite: boolean }> {
+    // Check if already favorited
+    const { data: existing } = await supabase
+      .from('user_favorites')
+      .select('id')
+      .eq('user_email', userEmail)
+      .eq('mechanic_id', mechanicId)
+      .single();
+
+    if (existing) {
+      // Remove from favorites
+      const { error } = await supabase
+        .from('user_favorites')
+        .delete()
+        .eq('user_email', userEmail)
+        .eq('mechanic_id', mechanicId);
+
+      return { success: !error, isFavorite: false };
+    } else {
+      // Add to favorites
+      const { error } = await supabase
+        .from('user_favorites')
+        .insert({
+          user_email: userEmail,
+          mechanic_id: mechanicId,
+        });
+
+      return { success: !error, isFavorite: true };
+    }
+  },
+
+  // Get user's favorite mechanics
+  async getFavorites(userEmail: string): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_favorites')
+      .select('mechanic_id')
+      .eq('user_email', userEmail);
+
+    if (error) {
+      console.error('Error fetching favorites:', error);
+      return [];
+    }
+
+    return data.map(fav => fav.mechanic_id);
   },
 };
