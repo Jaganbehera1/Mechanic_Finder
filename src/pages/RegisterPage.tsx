@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, User, MapPin, Phone, Mail, IndianRupee, FileText, Lock, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle, User, MapPin, Phone, Mail, IndianRupee, FileText, Lock, Eye, EyeOff, Link, Plus, X } from 'lucide-react';
 import { MECHANIC_CATEGORIES } from '../types/mechanic';
 import { getStates, getDistrictsByState } from '../data/indianStatesDistricts';
 import { useAuth } from '../hooks/useAuth';
 import { mechanicService } from '../services/mechanicService';
+import { useLanguage } from '../contexts/LanguageContext';
+import ProfilePhotoUpload from '../components/ProfilePhotoUpload';
 
 const RegisterPage: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { signUp } = useAuth();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
+    user_id: '',
     username: '',
     password: '',
     confirmPassword: '',
@@ -26,8 +30,14 @@ const RegisterPage: React.FC = () => {
     email: '',
     experience: '',
     description: '',
-    availability: 'available' as const
+    availability: 'available' as const,
+    profileImageUrl: '',
+    skills: [] as string[],
+    website: '',
+    linkedin: '',
+    instagram: '',
   });
+  const [newSkill, setNewSkill] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -79,6 +89,23 @@ const RegisterPage: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const addSkill = () => {
+    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()]
+      }));
+      setNewSkill('');
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove)
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -106,6 +133,10 @@ const RegisterPage: React.FC = () => {
 
       if (authData.user) {
         // Create mechanic profile
+        setFormData(prev => ({
+          ...prev,
+          user_id: authData.user?.id as string   // ✅ store Supabase UUID
+          }));
         const { success, error } = await mechanicService.createMechanic({
           user_id: authData.user.id,
           username: formData.username,
@@ -120,6 +151,13 @@ const RegisterPage: React.FC = () => {
           experience: parseInt(formData.experience),
           description: formData.description,
           availability: formData.availability,
+          profileImageUrl: formData.profileImageUrl,
+          skills: formData.skills,
+          socialLinks: {
+            website: formData.website,
+            linkedin: formData.linkedin,
+            instagram: formData.instagram,
+          },
         });
 
         if (!success) {
@@ -143,7 +181,7 @@ const RegisterPage: React.FC = () => {
         <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
           <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 mb-4">
             Your account has been created successfully! Please check your email to verify your account, then you can log in to manage your profile.
           </p>
           <button
@@ -156,6 +194,7 @@ const RegisterPage: React.FC = () => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -172,6 +211,8 @@ const RegisterPage: React.FC = () => {
                 <p className="text-sm text-red-600">{errors.general}</p>
               </div>
             )}
+
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Username */}
@@ -445,6 +486,99 @@ const RegisterPage: React.FC = () => {
                   <option value="busy">Busy</option>
                   <option value="unavailable">Unavailable</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Profile Image */}
+            <div className="mt-6">
+              <ProfilePhotoUpload
+                currentImageUrl={formData.profileImageUrl}
+                onImageUpload={(url) => setFormData(prev => ({ ...prev, profileImageUrl: url }))}
+                userId={formData.username}  // ✅ use Supabase user_id
+              />
+            </div>
+
+            {/* Skills */}
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Skills & Specializations
+              </label>
+              <div className="flex space-x-2 mb-3">
+                <input
+                  type="text"
+                  value={newSkill}
+                  onChange={(e) => setNewSkill(e.target.value)}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., Furniture Making, Home Renovation"
+                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                />
+                <button
+                  type="button"
+                  onClick={addSkill}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.skills.map((skill, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-blue-100 text-blue-800"
+                  >
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() => removeSkill(skill)}
+                      className="ml-2 text-blue-600 hover:text-blue-800"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Social Links */}
+            <div className="mt-6">
+              <label className="flex items-center text-sm font-medium text-gray-700 mb-4">
+                <Link className="h-4 w-4 mr-2 text-gray-500" />
+                Professional Links (Optional)
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Website</label>
+                  <input
+                    type="url"
+                    name="website"
+                    value={formData.website}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://yourwebsite.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">LinkedIn</label>
+                  <input
+                    type="url"
+                    name="linkedin"
+                    value={formData.linkedin}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://linkedin.com/in/yourprofile"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Instagram</label>
+                  <input
+                    type="url"
+                    name="instagram"
+                    value={formData.instagram}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="https://instagram.com/yourprofile"
+                  />
+                </div>
               </div>
             </div>
 

@@ -10,6 +10,7 @@ const Header: React.FC = () => {
   const { user, signOut } = useAuth();
   const { t } = useLanguage();
   const location = useLocation();
+
   const [showLoginModal, setShowLoginModal] = React.useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
@@ -38,9 +39,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/"
                       className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive('/')
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                        isActive('/') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                       }`}
                     >
                       <Search className="h-4 w-4" />
@@ -50,9 +49,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/register"
                       className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive('/register')
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                        isActive('/register') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                       }`}
                     >
                       <UserPlus className="h-4 w-4" />
@@ -74,9 +71,7 @@ const Header: React.FC = () => {
                     <Link
                       to="/dashboard"
                       className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                        isActive('/dashboard')
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                        isActive('/dashboard') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                       }`}
                     >
                       <Settings className="h-4 w-4" />
@@ -93,20 +88,27 @@ const Header: React.FC = () => {
                   </>
                 )}
               </nav>
-              
-              {/* Language Selector */}
+
+              {/* Desktop Language Selector */}
               <LanguageSelector />
             </div>
 
-            {/* Mobile menu toggle button */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-gray-700 focus:outline-none"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {/* Right side - Mobile Language Selector + Hamburger Menu */}
+            <div className="flex items-center space-x-2 md:hidden">
+              {/* Language selector on mobile at red box location */}
+              <LanguageSelector />
+
+              {/* Mobile menu toggle button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-gray-700 focus:outline-none"
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
             </div>
           </div>
+        </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
@@ -117,9 +119,7 @@ const Header: React.FC = () => {
                   to="/"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`block text-center px-3 py-2 rounded-md text-sm font-bold ${
-                    isActive('/')
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    isActive('/') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                 >
                   {t('header.findMechanics')}
@@ -128,9 +128,7 @@ const Header: React.FC = () => {
                   to="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`block text-center px-3 py-2 rounded-md text-sm font-bold ${
-                    isActive('/register')
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    isActive('/register') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                 >
                   {t('header.registerMechanic')}
@@ -153,9 +151,7 @@ const Header: React.FC = () => {
                   to="/dashboard"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`block text-center px-3 py-2 rounded-md text-sm font-bold ${
-                    isActive('/dashboard')
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    isActive('/dashboard') ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                   }`}
                 >
                   {t('header.dashboard')}
@@ -171,11 +167,11 @@ const Header: React.FC = () => {
                 </button>
               </>
             )}
-            
-            {/* Mobile Language Selector */}
-            <div className="pt-2 border-t border-gray-200">
+
+            {/* Mobile Language Selector (optional duplicate if you want inside menu as well) */}
+            {/* <div className="pt-2 border-t border-gray-200">
               <LanguageSelector />
-            </div>
+            </div> */}
           </div>
         )}
       </header>
@@ -184,7 +180,6 @@ const Header: React.FC = () => {
       <LoginModal
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
-        // onSuccess={() => setShowLoginModal(false)}
       />
     </>
   );

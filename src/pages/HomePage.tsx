@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Users, MapPin, IndianRupee } from 'lucide-react';
+import { Users, MapPin, IndianRupee, Heart } from 'lucide-react';
 import { Mechanic, SearchFilters as SearchFiltersType } from '../types/mechanic';
 import MechanicCard from '../components/MechanicCard';
 import SearchFilters from '../components/SearchFilters';
 import { mechanicService } from '../services/mechanicService';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../hooks/useAuth';
 
 const HomePage: React.FC = () => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [mechanics, setMechanics] = useState<Mechanic[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
   // const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<SearchFiltersType>({
     category: '',
@@ -20,6 +23,9 @@ const HomePage: React.FC = () => {
 
   useEffect(() => {
     loadMechanics();
+    if (user) {
+      loadFavorites();
+    }
   }, []);
 
   const loadMechanics = async () => {
@@ -33,12 +39,44 @@ const HomePage: React.FC = () => {
     }
   };
 
+  const loadFavorites = async () => {
+    if (!user) return;
+    try {
+      const favoriteIds = await mechanicService.getFavorites(user.email!);
+      setFavorites(favoriteIds);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  };
+
   const handleRating = (mechanicId: string, rating: number) => {
     mechanicService.updateRating(mechanicId, rating);
     // Update local state
     setMechanics(prev => prev.map(mechanic => 
       mechanic.id === mechanicId ? { ...mechanic, rating } : mechanic
     ));
+  };
+
+  const handleReviewAdded = () => {
+    // Reload mechanics to get updated ratings
+    loadMechanics();
+  };
+
+  const handleFavorite = async (mechanicId: string) => {
+    if (!user) return;
+    
+    try {
+      const { success, isFavorite } = await mechanicService.toggleFavorite(user.email!, mechanicId);
+      if (success) {
+        if (isFavorite) {
+          setFavorites(prev => [...prev, mechanicId]);
+        } else {
+          setFavorites(prev => prev.filter(id => id !== mechanicId));
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    }
   };
 
   const filteredMechanics = useMemo(() => {
@@ -123,7 +161,14 @@ const HomePage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredMechanics.map(mechanic => (
-              <MechanicCard key={mechanic.id} mechanic={mechanic} onRate={handleRating} />
+            <MechanicCard 
+              key={mechanic.id} 
+              mechanic={mechanic} 
+              onRate={handleRating}
+              onFavorite={user ? handleFavorite : undefined}
+              isFavorite={favorites.includes(mechanic.id)}
+              onReviewAdded={handleReviewAdded}
+            />
             ))}
           </div>
         )}
