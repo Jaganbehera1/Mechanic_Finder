@@ -128,8 +128,8 @@ const DashboardPage: React.FC = () => {
     }
     if (!formData.contactNumber.trim()) {
       newErrors.contactNumber = 'Contact number is required';
-    } else if (!/^\+91[6-9]\d{9}$/.test(formData.contactNumber)) {
-      newErrors.contactNumber = 'Please enter a valid Indian mobile number (+91XXXXXXXXXX)';
+    } else if (!/^[6-9]\d{9}$/.test(formData.contactNumber)) {
+      newErrors.contactNumber = 'Please enter a valid 10-digit Indian mobile number';
     }
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Valid email is required';
